@@ -20,11 +20,13 @@ export const signup = async (req, res, next) => {
   try {
     const prisma = new PrismaClient();
     const { email, password } = req.body;
+    const username = email.split('@')[0];
     if (email && password) {
       const user = await prisma.user.create({
         data: {
           email,
           password: await generatePassword(password),
+          username: username,
         },
       });
       return res.status(201).json({
@@ -113,7 +115,7 @@ export const setUserInfo = async (req, res, next) => {
         const userNameValid = await prisma.user.findUnique({
           where: { username: userName },
         });
-        if (userNameValid) {
+        if (!userNameValid) {
           return res.status(200).json({ userNameError: true });
         }
         await prisma.user.update({
